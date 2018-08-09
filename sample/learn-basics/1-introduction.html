@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+		<title>sample Vue</title>
+		<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+		<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+	</head>
+	<body>
+		<!--1. 当一个 Vue 实例被创建时，它向 Vue 的响应式系统中加入了其 data 对象中能找到的所有的属性。当这些属性的值发生改变时，视图将会产生“响应”，即匹配更新为新的值。当这些数据改变时，视图会进行重渲染。值得注意的是只有当实例被创建时 data 中存在的属性才是响应式的。也就是说如果添加一个新的属性，那么对属性的改动将不会触发任何视图的更新。如果知道会在晚些时候需要一个属性，但是一开始它为空或不存在，那么你仅需要设置一些初始值。— 但data内需要先声明对应的属性，可赋值为null或0：注意，不能通过Vue对象添加-->
+		<h4>1.数据绑定</h4>
+		<div id="app">
+		  {{ message }}
+		  <!--v-text：会将当前标签绑定到指定属性，内部若包含子标签，可能会被渲染忽略。虽然v-text在未取到数据就不会渲染，双花括号会将 {{ prop }} 直接渲染到页面上-->
+		  <p> v-text: 
+		  	<label v-text="message"></label>
+		  </p>
+		  <!--45. v-bind:value简写 :value，是实现单向数据绑定，即数据变更UI会更新，但UI修改不会变更数据，v-model实现的数据和UI的双向绑定（可绑定对象，通过点语法访问key）- 用于input标签-->
+		  <p> v-bind:value
+		  	<input v-bind:value="message"></input>
+		  </p>
+		</div>
+		
+		<h4>2.事件绑定</h4>
+		<div id="app-2">
+		  <span v-bind:title="message">
+		    鼠标悬停几秒钟查看此处动态绑定的提示信息！
+		  </span>
+		</div>
+		
+		<h4>3.判断</h4>
+		<div id="app-3">
+			<p v-if="seen">现在你看到我了</p>
+			<p v-else>现在我应该是隐藏的</p>
+		</div>
+		
+		<h4>4.循环绑定</h4>
+		<div id="app-4">
+		  <ol>
+		    <li v-for="todo in todos">
+		      {{ todo.text }}
+		    </li>
+		  </ol>
+		</div>
+		
+		<h4>5.点击绑定</h4>
+		<div id="app-5">
+			<p>{{ message }}</p>
+			<button v-on:click="reverseMessage">逆转消息</button>
+		</div>
+		
+		<h4>6.双向绑定</h4>
+		<div id="app-6">
+			<p>{{ message }}</p>
+			<input v-model="message" />
+		</div>
+		
+		<h4>7.自定义组件</h4>
+		<div id="app-7">
+			<ol>
+				<!--v-bind:key见7复用：https://cn.vuejs.org/v2/guide/list.html#%E4%B8%80%E4%B8%AA%E5%AF%B9%E8%B1%A1%E7%9A%84-v-for-->
+				<todo-item v-for="item in groceryList" v-bind:todo='item' v-bind:key='item.id'></todo-item>
+			</ol>
+		</div>
+		
+		<h4>8.关于闭包</h4>
+		<div id="app-8">
+			{{ cls }}
+			<button @click="func">update</button>
+		</div>
+		
+		<script>
+			var app = new Vue({
+			  el: '#app',
+			  data: {
+			    message: 'Hello Vue!'
+			  }
+			});
+			app.message = app.message + " - appanding";
+			
+			var app2 = new Vue({
+			  el: '#app-2',
+			  data: {
+			    message: '页面加载于 ' + new Date().toLocaleString()
+			  }
+			});
+			app2.message = app2.message + " - appanding";
+			
+			var app3 = new Vue({
+				el: "#app-3",
+				data: {
+					seen: false,
+				}
+			});
+//			app3.seen = true;
+			
+			var app4 = new Vue({
+			  el: '#app-4',
+			  data: {
+			    todos: [
+			      { text: '学习 JavaScript' },
+			      { text: '学习 Vue' },
+			      { text: '整个项目' }
+			    ]
+			  }
+			});
+			app4.todos.push({ text: '新项目' });
+			
+			var app5 = new Vue({
+				el: "#app-5",
+				data: {
+					message: "Hello Vue.js!"
+				},
+				methods: {
+					reverseMessage: function() {
+						this.message = this.message.split('').reverse().join('')
+					}
+				}
+			});
+			
+			var app6 = new Vue({
+				el: "#app-6",
+				data: {
+					message: "hello Vue!"
+				},
+			});
+			
+			// 定义名为 todo-item 的新组件
+			Vue.component('todo-item', {
+				// todo-item 组件现在接受一个"prop"，类似于一个自定义特性。
+				props: ['todo'],
+				template: '<li>{{ todo.text }}</li>'
+			})
+			var app7 = new Vue({
+			  el: '#app-7',
+			  data: {
+			  	groceryList: [
+			      { id: 0, text: '蔬菜' },
+			      { id: 1, text: '奶酪' },
+			      { id: 2, text: '随便其它什么人吃的东西' }
+			    ]
+			  }
+			});
+			
+			//11. Vue属性不支持闭包，但方法是可以作为属性的，而且方法支持闭包的。闭包是全局变量或者是被全局变量所引用，如绑定Vue方法，不能是在调用的方法内创建，否则每次都是新对象
+			new Vue({
+				el: "#app-8",
+				data: {
+					cls: 1
+				},
+				methods: {
+					func: function() {
+						this.cls = this.clsfun()
+					},
+					
+					clsfun: function() {
+						
+						let count = 0;
+						return function() {
+							return count++;
+						}
+					}()
+				}
+			});
+		</script>
+	</body>
+</html>

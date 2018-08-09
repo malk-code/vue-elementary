@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+    <head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+		<title>condition renderer</title>
+		<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+		<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>	
+		<script src="http://apps.bdimg.com/libs/jquery/2.1.1/jquery.min.js"></script>
+        <script src="../library/handlebars-v4.0.11.js"></script>
+        <style>
+	        	/* The Modal (background) */
+			.modal {
+			    display: none; /* Hidden by default */
+			    position: fixed; /* Stay in place */
+			    z-index: 1; /* Sit on top */
+			    padding-top: 100px; /* Location of the box */
+			    left: 0;
+			    top: 0;
+			    width: 100%; /* Full width */
+			    height: 100%; /* Full height */
+			    overflow: auto; /* Enable scroll if needed */
+			    background-color: rgb(0,0,0); /* Fallback color */
+			    background-color: rgba(0,0,0,0.9); /* Black w/ opacity */
+			}
+			
+			/* Modal Content (image) */
+			.modal-content {
+			    margin: auto;
+			    display: block;
+			    width: 80%;
+			    max-width: 700px;
+			    
+			    color: white;
+			    text-align: justify;
+			}
+			
+			/* Add Animation */
+			.modal-content, #caption {    
+			    -webkit-animation-name: zoom;
+			    -webkit-animation-duration: 0.6s;
+			    animation-name: zoom;
+			    animation-duration: 0.6s;
+			}
+			
+			@-webkit-keyframes zoom {
+			    from {-webkit-transform: scale(0)} 
+			    to {-webkit-transform: scale(1)}
+			}
+			
+			@keyframes zoom {
+			    from {transform: scale(0.1)} 
+			    to {transform: scale(1)}
+			}
+			
+			/* The Close Button */
+			.close {
+			    position: absolute;
+			    top: 15px;
+			    right: 35px;
+			    color: #f1f1f1;
+			    font-size: 40px;
+			    font-weight: bold;
+			    transition: 0.3s;
+			}
+        </style>
+    </head>
+    
+    <body>
+    		<h5>Handlebars 模板</h5>
+    		<div id="Handlebars"> Handlebars: 
+    		{{#if ok}}
+    		<button onclick="location.href = '../library/handlebars.html'">{{ok}}</button>
+    		{{/if}}</div>
+    		<script>
+    			let data = {
+    				ok:'skip',
+    			};
+    			var tmpl = $('#Handlebars').html();
+	        var func = Handlebars.compile(tmpl);
+	        var result = func(data);
+	        $('#Handlebars').html(result);
+    		</script>
+    		
+    		<!--Vue若绑定多个标签，添加一个div包含，别设置多个id-->
+    		<h5>Vue 条件绑定</h5>
+    		<div id="app-1">
+    			<p v-if="ok === 'A'">IF</p>
+	    		<p v-else-if="ok === 'B'">ELSE-IF</p>
+	    		<p v-else="ok">ELSE</p>
+    		</div>
+    		
+    		<!--可以把一个 <template> 元素当做不可见的包裹元素，并在上面使用 v-if。最终的渲染结果将不包含 <template> 元素：因此需要添加一个div设置id实现和Vue的绑定-->
+    		<div id="app-2">绑定模板：
+    			<template v-if="isShow">
+	    		  <h4>v-if - if</h4>
+			</template>
+			<template v-else="isShow">
+	    		  <h4>v-if - else</h4>
+			</template>
+    		</div>
+    		
+    		<!--若简写v-else，即取消后面等于的条件，那么v-else 元素必须紧跟在带 v-if 或者 v-else-if 的元素的后面，否则它将不会被识别。-->
+    		<div id="app-3"> 简写：
+    			<div v-if="r">Now you see me</div>
+    			<div v-else>Now you don't</div>
+    		</div>
+    		<br />
+    		<!--v-if结合template标签可实现控件的复用，控件的样式和数据都会被保存。若标签不需要被复用，只需要为控件添加一个不重复的KEY属性即可-->
+    		<div id="app-4">控件复用：同一组控件
+    			<br />
+    			<template v-if="loginType == 'username'">
+	    			<label>username:</label>
+	    			<input placeholder="input your username" />
+	    		</template>
+    			<template v-else>
+	    			<label>Email:</label>
+	    			<input placeholder="input your Email" />
+    			</template>
+    		</div>
+    		<button onclick="app4.isEmail = !app4.isEmail">toggle login type</button> 
+    		<br /><br />
+    		<!--<label> 元素仍然会被高效地复用，因为它们没有添加 key 属性。-->
+	    	<div id="app-5">控件复用：input是两个独立控件，每次重新渲染
+			<br />
+			<template v-if="loginType == 'username'">
+	    			<label>username:</label>
+	    			<input placeholder="input your username" key="username" />
+    			</template>
+			<template v-else>
+	    			<label>Email:</label>
+	    			<input placeholder="input your Email" key="Email" />
+			</template>
+    		</div>
+    		<button onclick="app5.isEmail = !app5.isEmail">toggle login type</button>
+    		
+    		<script>
+    			new Vue({
+    				el: "#app-1",
+    				data: {
+    					ok: "C",
+    				},
+    			});
+    			new Vue({
+    				el: "#app-2",
+    				data: {
+    					isShow: true,
+    				},
+    			});
+    			new Vue({
+    				el: "#app-3",
+    				data: {
+    					r: Math.random() > 0.5,
+    				},
+    			});
+    			let app4 = new Vue({
+    				el: "#app-4",
+    				data: {
+    					isEmail: false,
+    				}, 
+    				computed: {
+    					loginType: function() {
+    						return this.isEmail ? "Email" :"username";
+    					},
+    				},
+    			});
+		    	let app5 = new Vue({
+				el: "#app-5",
+				data: {
+					isEmail: false,
+				}, 
+				computed: {
+					loginType: function() {
+						return this.isEmail ? "Email" :"username";
+					},
+				},
+    			});
+    		</script>
+    		
+    		<br />
+    		<hr />
+    		
+    		<h4>v-show</h4>
+    		<!--v-show也可用于根据条件展示元素的选项是 v-show 指令。不同的是带有 v-show 的元素始终会被渲染并保留在 DOM 中。v-show 只是简单地切换元素的 CSS 属性 display。注意，v-show 不支持 <template> 元素，也不支持 v-else。-->
+    		<p id="app1" v-show="ok">Hello!</p>
+    		
+    		<h3>js imple</h3>
+    		<div id="app2" class="modal">
+    			<label class="close" onclick="document.getElementById('app2').style.display  = 'none'">X</label>
+    			<label class="modal-content">v-show也可用于根据条件展示元素的选项是 v-show 指令。不同的是带有 v-show 的元素始终会被渲染并保留在 DOM 中。v-show 只是简单地切换元素的 CSS 属性 display。注意，v-show 不支持 template 元素，也不支持 v-else。</label>
+    		</div>
+    		<button onclick="document.getElementById('app2').style.display = 'block'">show style to block</button>
+    		
+		<br />
+		<h3>Vue imple</h3>
+    		<div id="app3">
+    			<div v-bind:class="calssObj" v-bind:style="{display:display}">
+    				<label v-bind:class="classObj1" @click="hiddenBlock">{{ close }}</label>
+    				<label v-bind:class="classObj2">{{ content }}</label>
+    			</div>
+    			<button @click="showAlert">showAlert</button>
+    		</div>
+    		
+    		<h4>当 v-if 与 v-for 一起使用时，v-for 具有比 v-if 更高的优先级。</h4>
+    		<p>案例见 7-list：v-for with v-if</p>
+		<!--20. v-if vs v-show
+		    1. v-if 是“真正”的条件渲染，因为它会确保在切换过程中条件块内的事件监听器和子组件适当地被销毁和重建。
+		    2. v-if 也是惰性的：如果在初始渲染时条件为假，则什么也不做——直到条件第一次变为真时，才会开始渲染条件块。
+		    3. 相比之下，v-show 就简单得多——不管初始条件是什么，元素总是会被渲染，并且只是简单地基于 CSS 进行切换。
+		    4. 一般来说，v-if 有更高的切换开销，而 v-show 有更高的初始渲染开销。因此，如果需要非常频繁地切换，则使用 v-show 较好；如果在运行时条件很少改变，则使用 v-if 较好。    		-->
+		    <script>
+    			new Vue({
+    				el: "#app1",
+    				data: {
+    					ok: true,
+    				},
+    			});
+    			new Vue({
+    				el: "#app3",
+    				data: {
+    					isShow: false,
+    					close: "X",
+    					content: "v-show也可用于根据条件展示元素的选项是 v-show 指令。不同的是带有 v-show 的元素始终会被渲染并保留在 DOM 中。v-show 只是简单地切换元素的 CSS 属性 display。注意，v-show 不支持 template 元素，也不支持 v-else。",
+    					
+    					calssObj: {
+    						'modal': true,
+    					},
+    					classObj1: {
+    						'close': true,
+    					},
+    					classObj2: {
+    						'modal-content': true,
+    					},
+    				},
+    				computed: {
+    					display: function() {
+    						return this.isShow ? "block" : "none";
+    					},
+    				},
+    				methods: {
+    					showAlert: function() {
+    						this.isShow = true; 
+    					},
+    					hiddenBlock: function() {
+    						this.isShow = false;
+    					},
+    				},
+    			});
+    		</script>
+</html>

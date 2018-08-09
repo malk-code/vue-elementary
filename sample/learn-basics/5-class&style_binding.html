@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+		<title>class and style binding Vue</title>
+		<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+		<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+		<style>
+			.static {
+				background-color: darkorchid;
+				text-align: center;
+				color: white;
+			}
+			.active {
+				border-radius: 8px;
+				background-color: darkcyan;
+			}
+			.text-danger {
+				background-color: red;
+			}
+		</style>
+	</head>
+	<body>
+		<h5>Vue绑定样式HTML自身的样式是兼容的</h5>
+		<!--样式绑定对象若含有中横线，在作为Vue的绑定样式的KEY时，需要添加引号-->
+		<div id="app-1" class="static" v-bind:class="{ active:isActive, 'text-danger':hasError }">
+			{{ tips }} <br />
+			<button @click="switchStyle">switchStyle</button>
+		</div>
+		
+		<h5>绑定的数据对象不必内联定义在模板里：在对象内需要KEY是样式名称，通过赋值Bool来控制是否显示</h5>
+		<div id="app-2" class="static" v-bind:class="classObject">class style</div>
+		
+		<h5>v-bind可以绑定字符串，可以绑定对象，可以绑定计算属性 - 绑定计算属性，就可动态更新样式了</h5>
+		<div id="app-3" class="static" v-bind:class="classObject">
+			style
+		</div>
+		
+		<h5>可以绑定集合，可以绑定集合套字典，集合套对象 - 在对象内需要KEY是样式名称，通过赋值Bool来控制是否显示</h5>
+		<div id="app-4" v-bind:class="[class1, class2]">array</div><br />
+		<div id="app-5" v-bind:class="[class1, isActive ? class2 : class3]">array - KEY</div><br />
+		<div id="app-6" v-bind:class="[class1, isActive ? 'active' : 'text-danger']">array - style</div><br />
+		<div id="app-7" v-bind:class="[class1, { active:isActive }, classObject]">array - all</div>
+
+		<h5>绑定组件：</h5>
+		
+
+		<!--https://lodash.com/docs#debounce-->
+		<script src="https://cdn.jsdelivr.net/npm/lodash@4.13.1/lodash.min.js"></script>
+		
+		<script>
+		 	let vm1 = new Vue({
+				el: "#app-1",
+				data: {
+					tips: "class style",
+					isActive: true,
+					hasError: false,
+				},
+				methods: {
+					// 限制操作频率
+					switchStyle: _.debounce (
+						function() {
+							this.isActive = !this.isActive;
+							this.hasError = !this.hasError;
+							this.tips = _.capitalize(this.tips);
+						},
+					500)
+				}
+			});
+			vm1.isActive = false;
+			
+			new Vue({
+				el: "#app-2",
+				data: {
+					//绑定的数据对象不必内联定义在模板里
+					classObject: {
+//						12. 样式绑定对象若含有中横线，在作为Vue的绑定样式的KEY时，需要添加引号。v-bind可以绑定字符串，可以绑定对象，可以绑定计算属性，可以绑定集合，可以绑定集合套字典等
+						'text-danger': true,
+					},
+				},
+			});
+			
+			// 绑定计算属性，就可动态更新样式了
+			let vm3 = new Vue({
+				el: "#app-3",
+				data: {
+					isModify: 0,
+				},
+				computed: {
+					classObject: function() {
+						this.alertMsg();
+						return {
+							active: this.isModify,
+						};
+					},
+				},
+				methods: {
+					alertMsg: function() {
+//						window.alert('modify style - ' + this.isModify.toString());
+						console.log('modify style - ' + this.isModify.toString());
+					}
+				}
+			});
+			vm3.isModify = true;
+			
+			new Vue({
+				el: "#app-4",
+				data: {
+					class1: "static",
+					class2: "text-danger",
+				}
+			});
+			
+			new Vue({
+				el: "#app-5",
+				data: {
+					class1: 'static',
+					class2: 'active',
+					class3: 'text-danger',
+					isActive: true,
+				}
+			});
+			
+			new Vue({
+				el: "#app-6",
+				data: {
+					class1: 'static',
+					isActive: false,
+				}
+			});
+			
+			new Vue({
+				el: "#app-7",
+				data: {
+					class1: "static",
+					isActive: true,
+					// 在对象内需要KEY是样式名称，通过赋值Bool来控制是否显示
+					classObject: {
+						'text-danger': true,
+					}
+				}
+			})
+		</script>
+		
+		
+		<hr />
+		<!--自动添加前缀：当 v-bind:style 使用需要添加浏览器引擎前缀的 CSS 属性时，如 transform，Vue.js 会自动侦测并添加相应的前缀。-->
+		<h4>绑定内联样式</h4>
+		<!--短线分隔的属性 (kebab-case，记得用单引号括起来-->
+		<div id="app1" v-bind:style="{ color:foreColor, 'background-color':backColor, 'text-align':alignStyle, fontSize:fontSize+'px' }">
+			inline style string
+		</div><br />
+		<div id="app2" v-bind:style="styleObject">
+			inline style object
+		</div><br />
+		<div id="app3" v-bind:style="styleObject">
+			inline style object computed
+		</div><br />
+		<div id="app4" v-bind:style="[style1, style2]">
+			inline style object array
+		</div>
+		
+		<p style="text-align: justify; font-size: 14px;">
+			Noti：14. 自动添加前缀：当 v-bind:style 使用需要添加浏览器引擎前缀的 CSS 属性时，如 transform，Vue.js 会自动侦测并添加相应的前缀。<br />
+			15. 多重值：从 2.3.0 起你可以为 style 绑定中的属性提供一个包含多个值的数组，常用于提供多个带前缀的值。但只会渲染数组中最后一个被浏览器支持的值，如果浏览器支持不带浏览器前缀的 flexbox，那么就只会渲染 display: flex。即使存在’-ms-flexbox’格式前缀。
+		</p>
+		<script>
+			new Vue({
+				el: "#app1",
+				data: {
+					foreColor: 'white',
+					backColor: 'darkorchid',
+					alignStyle: 'center',
+					fontSize: '20'
+				},
+			});
+			new Vue({
+				el: "#app2", 
+				data: {
+					styleObject: {
+						// 行内样式绑定或者修改，若含有px，em， rem等单位时，也需要添加引号修饰，否则无效。
+						background: 'darkcyan',
+						fontSize: '14px',
+						'text-align': 'center',
+						color: 'white',
+						'border-radius': '10px'
+					},
+					isModify: 0,
+				},
+			});
+			let app2 = new Vue({
+				el: "#app3", 
+				data: {
+					
+					isModify: 0,
+				},
+				computed: {
+					styleObject: function() {
+						return {
+							// 行内样式绑定或者修改，若含有px，em， rem等单位时，也需要添加引号修饰，否则无效。
+							background: 'darkcyan',
+							fontSize: this.isModify ? '14px' : "18px",
+							'text-align': 'center',
+							color: 'white',
+							'border-radius': '10px'
+						};
+					},
+				}
+			});
+			app2.isModify = false;
+			
+			new Vue({
+				el: "#app4",
+				data: {
+					style1: {
+						// 行内样式绑定或者修改，若含有px，em， rem等单位时，也需要添加引号修饰，否则无效。
+						background: 'darkcyan',
+						fontSize: '16px',
+						'text-align': 'center',
+						color: 'white',
+						'border-radius': '10px'
+					},
+					style2: {
+						height: "30px",
+						'line-height': '30px',
+					},
+				},
+			});
+		</script>
+	</body>
+</html>

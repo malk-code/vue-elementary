@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+    <head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+		<title>condition renderer</title>
+		<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+		<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>	
+		<script src="http://apps.bdimg.com/libs/jquery/2.1.1/jquery.min.js"></script>
+        <script src="../library/handlebars-v4.0.11.js"></script>
+        </head> 
+        <style>
+            .person {
+                font-size:40px;
+                float:left;
+                padding:10px;
+                background-color:pink;
+                font-size: 14px;
+                width: 100%;
+            }
+            
+        </style>
+    </head>
+    
+    <body>
+    		<h5>Handlebars 模板</h5>
+    		<!--https://www.cnblogs.com/geek1116/p/7259803.html-->
+        <div id = "person_info"> 1.
+            <div class = "person">
+                <div>姓名：{{name}}</div>    
+                <div>出生地：{{home}}</div>
+                <div>职业：{{job}}</div>
+            </div>
+        </div>
+        <!--数据绑定花括号不能添加空格-->
+		<div id="person_info_2"> 2.
+	        {{#each this}}
+	        <div class = "person">
+	            <div>姓名：{{name}}</div>    
+	            <div>出生地：{{home}}</div>
+	            <div>职业：{{job}}</div>
+	        </div>
+			{{/each}}
+		</div>
+		<div id = "person_info_3"> 3.
+            {{#each this}}
+            <div class = "person">
+                <div>姓名：{{name}}</div>
+                <div>出生地：{{home}}</div>
+                <div>职业：{{job}}</div>
+                {{#if life}}
+                　　<div>生涯经历：</div>
+                    <ul>
+                    {{#each life}}
+                        <li>{{this}}</li>
+                    {{/each}}
+                    </ul>
+                {{/if}}
+            </div>
+            {{/each}}
+        </div>
+
+    </body>
+    
+    <script>
+        var data ={
+            name:'约翰莫里森',
+            home:'美国',
+            job:'摔跤手'
+        };
+        
+        var tmpl = $('#person_info').html();
+        var func = Handlebars.compile(tmpl);        
+        var result = func(data);
+        $('#person_info').html(result);
+    </script>
+    
+    <script>
+    		var data =[{
+            name:'约翰莫里森',
+            home:'美国',
+            job:'摔跤手'
+        },
+        {
+            name:'Faker',
+            home:'韩国',
+            job:'英雄联盟职业选手'
+        }];
+        
+        var tmpl = $('#person_info_2').html();
+        var func = Handlebars.compile(tmpl);
+        var result = func(data);
+        $('#person_info_2').html(result);
+    </script>
+    
+    <script>
+        var data =[{
+            name:'约翰莫里森',
+            home:'美国',
+            job:'摔跤手'
+        },
+        {
+            name:'Faker',
+            home:'韩国',
+            job:'英雄联盟职业选手',
+            life:['S3世界总冠军','S4世界总冠军','S5世界总冠军']
+        }];
+        
+        var tmpl = $('#person_info_3').html();
+        console.log(tmpl);
+        var func = Handlebars.compile(tmpl);
+        var result = func(data);
+        $('#person_info_3').html(result);
+    </script>
+    
+</html>
