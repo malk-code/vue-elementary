@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>component Vue</title>
+    <link rel="icon" href="https://oss.100ali.com/icon/ico-pp.ico" />
+    <!-- 开发环境版本，包含了用帮助的命令行警告 -->
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <style type="text/css">
+      .blog-post {
+        background: #008b8b;
+        text-align: center;
+        padding: 0px 10px;
+      }
+      .demo-alert-box {
+        background: burlywood;
+        color: white;
+        height: 40px;
+        line-height: 40px;
+        text-indent: 10px;
+        border: 1px solid #ff0000;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>组件基础</h2>
+
+    <h4>闭包的使用</h4>
+    <div id="app-1">
+      closure: {{ cls }}
+      <button @click="func">closure invoke</button>
+    </div>
+
+    <script>
+      //11. Vue属性不支持闭包，但方法是可以作为属性的，而且方法支持闭包的。闭包是全局变量或者是被全局变量所引用，如绑定Vue方法，不能是在调用的方法内创建，否则每次都是新对象
+      new Vue({
+        el: '#app-1',
+        data: {
+          cls: 1
+        },
+        methods: {
+          func: function() {
+            this.cls = this.clsfun()
+          },
+
+          clsfun: (function() {
+            let count = 0
+            return function() {
+              return count++
+            }
+          })()
+        }
+      })
+    </script>
+
+    <h4>直接绑定: data 必须是一个函数</h4>
+    <div id="app-2">
+      comp:<button-counter></button-counter><br />
+      reuse: <button-counter></button-counter>
+    </div>
+
+    <h4>通过 Prop 向子组件传递数据</h4>
+    <div id="app-3">
+      <blog-post tmp="test"></blog-post>
+      <blog-post tmp="My journey with Vue"></blog-post>
+    </div>
+
+    <h4>多参数情况：绑定传入值</h4>
+    <div id="app-4">
+      <blog-post
+        v-for="post in posts"
+        v-bind:key="post.id"
+        v-bind:tmp="post.title"
+      ></blog-post>
+    </div>
+
+    <h4>测试模仿: 绑定传入对象</h4>
+    <div id="app-5">
+      <ul>
+        <test-comp
+          v-for="order in orders"
+          v-bind:key="order.id"
+          v-bind:obj="order"
+        ></test-comp>
+      </ul>
+    </div>
+
+    <!--3. 组件的数据绑定有三种：1.data返回一个function，内置数据，2.绑定一个obj的某一个key，3.直接传入绑定对象。2和3都是从父组件通过props传入：js参数无类型限制-->
+
+    <script>
+      // 定义一个名为 button-counter 的新组件
+      Vue.component('button-counter', {
+        // 1. data 必须是一个函数：每个组件都会各自独立维护data返回的json对象，因为每用一次组件，就会有一个它的新实例被创建，若直接返回json，就会出现组件复用时，数据都一致
+        data: function() {
+          return {
+            count: 0
+          }
+        },
+        //双击会执行双击方法，但也会走单击方法
+        template:
+          "<button @click='count++' @dblclick='count+=10'>you clicked me {{ count }} times.</button>"
+      })
+      new Vue({
+        el: '#app-2'
+      })
+
+      Vue.component('blog-post', {
+        props: ['tmp'],
+        template: '<p>绑定父组件的props：{{ tmp }}</p>'
+      })
+      new Vue({
+        el: '#app-3'
+      })
+
+      new Vue({
+        el: '#app-4',
+        data: {
+          posts: [
+            { id: 1, title: 'My journey with Vue' },
+            { id: 2, title: 'Blogging with Vue' },
+            { id: 3, title: 'Why Vue is so fun' }
+          ]
+        }
+      })
+
+      // test: 自定义绑定
+      Vue.component('test-comp', {
+        props: ['obj'],
+        template: '<li>order {{ obj.order }}</li>'
+      })
+      new Vue({
+        el: '#app-5',
+        data: {
+          orders: [
+            {
+              id: 1,
+              order: '1st'
+            },
+            {
+              id: 2,
+              order: '2nd'
+            },
+            {
+              id: 3,
+              order: '3rd'
+            },
+            {
+              id: 4,
+              order: '4th'
+            }
+          ]
+        }
+      })
+    </script>
+
+    <!-- 4. 当构建一个组件时，模板最终会包含的东西远不止一个标签，Vue规定每个组件必须只有一个根元素。多个标签可以将模板的内容包裹在一个父元素内，来进行处理，数据绑定见4-->
+    <hr />
+    <h4>通过事件向父级组件发送消息</h4>
+    <div id="app-6">
+      <div :style="{ fontSize: fontSize + 'px' }">
+        <blog-event
+          v-for="post in posts"
+          v-bind:post="post"
+          v-bind:key="post.id"
+          v-on:enlarge-text="bindEvent(1)"
+        ></blog-event>
+      </div>
+    </div>
+
+    <!--7. 使用事件抛出一个值，可以使用 $emit 的第二个参数来提供这个值，然后当在父级组件监听这个事件的时候，可以通过 $event 访问到被抛出的这个值。绑定组件事件需要在组件上-->
+    <h4>使用事件抛出一个值</h4>
+    <div id="app-7" :style="{ fontSize: fontSize + 'em' }">
+      <blog-event-1
+        v-bind:post="post"
+        v-on:enlarge-text="bindEvent($event)"
+      ></blog-event-1>
+    </div>
+
+    <script>
+      // 当点击这个按钮时，需要告诉父级组件放大所有博文的文本。幸好 Vue 实例提供了一个自定义事件的系统来解决这个问题。可以调用内建的 $emit 方法并传入事件的名字，来向父级组件触发一个事件：
+      Vue.component('blog-event', {
+        props: ['post'],
+        //折行转义字符: 内部若注释需要使用<!-- -->格式
+        template: `
+				<div class="blog-post" style="color: white">
+			      <h3>{{ post.post }}</h3>
+			      <!-- 6. 子组件若触发事件调用内建的 $emit 方法并传入事件的名字，来向父级组件触发一个事件，然后在组件上课通过v-on来直接监听事件。注意，绑定自定义事件不能使用简写 -->
+			      <button @click="$emit('enlarge-text')">Enlarge text</button>
+			      <div v-html="post.content"></div>
+			    </div>
+				`
+      })
+      new Vue({
+        el: '#app-6',
+        data: {
+          posts: [
+            {
+              id: 1,
+              post: 'test1'
+            },
+            {
+              id: 2,
+              post: 'test2'
+            }
+          ],
+          fontSize: 18
+        },
+        methods: {
+          bindEvent: function(val) {
+            //						alert(this.fontSize);
+            this.fontSize += val
+          }
+        }
+      })
+
+      Vue.component('blog-event-1', {
+        props: ['post'],
+        // 7. 使用事件抛出一个值，可以使用 $emit 的第二个参数来提供这个值，然后当在父级组件监听这个事件的时候，可以通过 $event 访问到被抛出的这个值。绑定组件事件需要在组件上
+        template: `
+				<div class="blog-post" style="color: white">
+			      <h3>{{ post.post }}</h3>
+			      <button @click="$emit('enlarge-text', 1)">Enlarge text</button>
+			      <div v-html="post.content"></div>
+			    </div>	
+				`
+      })
+      new Vue({
+        el: '#app-7',
+        data: {
+          post: {
+            id: 1,
+            post: 'bind Obj'
+          },
+          fontSize: 1
+        },
+        methods: {
+          bindEvent: function(val) {
+            alert(val)
+            this.fontSize += val
+          }
+        }
+      })
+    </script>
+
+    <h4>在组件上使用 v-model</h4>
+    <div id="app-8">
+      <input-comp
+        v-bind:obj="obj"
+        v-on:showvalue-event="intputValue()"
+      ></input-comp>
+    </div>
+
+    <h4>input v-model原理</h4>
+    <div id="app-9">
+      <input-comp-theory
+        v-bind:obj="obj"
+        v-on:input-event="obj.val=$event"
+      ></input-comp-theory>
+    </div>
+
+    <script>
+      Vue.component('input-comp', {
+        props: ['obj'],
+        template: `
+				<div>
+					<label>{{ obj.title }}</label>
+					<input v-model="obj.val" placeHolder="input v-model"></input>
+					<!--8. 注意注意: 子组件通过$emit传出事件, 方法名称不能含有大写字母, 可含有中横线: 若含有大写字母, 将会直接导致方法无法抛出 - 组件内部可使用@click，组件v-on监听是抛出的名称-->
+					<button v-on:click="$emit('showvalue-event')">show value</button>
+				</div>
+				`
+      })
+      new Vue({
+        el: '#app-8',
+        data: {
+          obj: {
+            title: 'input: ',
+            val: 'binding'
+          }
+        },
+        methods: {
+          intputValue: function() {
+            alert(this.obj.val)
+          }
+        }
+      })
+
+      //9. 组件的子元素，可直接使用v-model，若自定义实现，如input：将其 value 特性绑定到一个名叫 prop 上，在其 v-on:input 事件被触发时，将新的值通过自定义的 input 事件抛出
+      Vue.component('input-comp-theory', {
+        props: ['obj'],
+        template: `
+				<div>
+					<label>text: </label><label v-text="obj.val"></label><br />
+					<input :value="obj.val" v-on:input="$emit('input-event', $event.target.value)" placeHolder="input v-model"></input>
+				</div>
+				`
+      })
+      new Vue({
+        el: '#app-9',
+        data: {
+          obj: {
+            val: 'v-model theory'
+          }
+        }
+      })
+    </script>
+
+    <br />
+    <hr />
+    <h4>通过插槽分发内容</h4>
+
+    <alert-box id="app-10">
+      Something bad happened.
+    </alert-box>
+
+    <h4>动态组件</h4>
+    <div id="app-11" style="border: 1px solid #9932CC; padding: 20px 10px;">
+      <dynamic-comp
+        v-for="obj in obj"
+        v-bind:key="obj.id"
+        v-bind:obj="obj"
+        v-on:click-comp="compclick"
+      >
+      </dynamic-comp
+      ><br /><br />
+      <div class="demo-alert-box" v-text="content"></div>
+      <p>动态组件</p>
+      <!--11. 动态组件：同级data的components属性，可添加绑定组件，key是组件名，value是模板。在组件上通过 component 标签添加，再通过 v-bind:is 绑定需要显示的组件，做动态切换。-->
+      <component v-bind:is="comp"></component>
+    </div>
+    <h4>
+      <a href="http://192.168.2.101:8080/#/comp">动态组件进阶</a>
+    </h4>
+    <script>
+      //10. 插槽：也需要创建一个Vue对象，提前设置一个接口，有默认样式和显示值，若传入值，则显示传入值，否则显示默认值：也是相同的注册组件方式，只是需要添加 slot 标签
+      Vue.component('alert-box', {
+        template: `
+			    <div class="demo-alert-box">
+			      <strong>Error!</strong>
+			      <slot></slot>
+			    </div>
+			  `
+      })
+      new Vue({
+        el: '#app-10'
+      })
+
+      Vue.component('dynamic-comp', {
+        props: ['obj'],
+        template: `
+				<label style="border: 1px solid #dddddd; padding: 5px 10px;" v-text='obj.title' @click="$emit('click-comp', obj)"></label>
+				`
+      })
+      new Vue({
+        el: '#app-11',
+        data: {
+          obj: [
+            {
+              title: 'Home',
+              content: 'Home Component',
+              comp: 'first'
+            },
+            {
+              title: 'Post',
+              content: 'Post Component',
+              comp: 'second'
+            },
+            {
+              title: 'Active',
+              content: 'Active Component',
+              comp: 'third'
+            }
+          ],
+          comp: 'first',
+          content: 'component'
+        },
+        methods: {
+          compclick: function(obj) {
+            this.content = obj.content
+            //						 alert(this.content);
+            this.comp = obj.comp
+          }
+        },
+        // 动态组件
+        components: {
+          first: {
+            //第一个子组件
+            template: `<div>这里是子组件1</div>`
+          },
+          second: {
+            //第二个子组件
+            template: '<div>这里是子组件2</div>'
+          },
+          third: {
+            //第三个子组件
+            template: '<div>这里是子组件3</div>'
+          }
+        }
+      })
+    </script>
+
+    <br />
+    <hr />
+    <h4>解析 DOM 模板时的注意事项</h4>
+    <!--12. 解析 DOM 模板时的注意事项：有些 HTML 元素，诸如 <ul>、<ol>、<table> 和 <select>，对于哪些元素可以出现在其内部是有严格限制的。而有些元素，诸如 <li>、<tr> 和 <option>，只能出现在其它某些特定的元素内部。若会被作为无效的内容提升到外部，并导致最终渲染结果出错：使用原标签，通过 is=“组件注册名称” 来变通，实现标签的重写。-->
+    <div id="app-12">
+      <table>
+        <tr is="row-comp"></tr>
+        <row-comp></row-comp>
+      </table>
+    </div>
+
+    <p>见7-list：一个组件的 v-for</p>
+
+    <script>
+      Vue.component('row-comp', {
+        data: function() {
+          return {
+            content: 'this is a simple component'
+          }
+        },
+        template: '<label> e.g. {{ content }}</label>'
+      })
+      new Vue({
+        el: '#app-12'
+      })
+
+      console.log('测试')
+    </script>
+  </body>
+
+  <script src="../library/logmonitor.js"></script>
+  <script>
+    var vconsole = new VConsole()
+  </script>
+</html>
